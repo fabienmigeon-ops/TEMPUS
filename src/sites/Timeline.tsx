@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { HistoricalEvent, ZoomLevel } from './types';
-import { MONTHS, ZOOM_LEVELS, centuryOf, eventDateLabel, stepYear, yearLabel } from './types';
+import { MONTHS, ZOOM_LEVELS, centuryOf, eventDateLabel, yearLabel } from './types';
 import './timeline.css';
+import { VirtualRail } from './VirtualRail';
 
 const START_YEAR = -3100;
 const END_YEAR = new Date().getFullYear();
@@ -9,13 +10,6 @@ function formatPeriod(year: number, month: number, day: number, zoom: ZoomLevel)
   if (zoom === 'century') return `${centuryOf(year)}e siècle ${year < 0 ? 'av. J.-C.' : ''}`;
   if (zoom === 'year') return yearLabel(year);
   return `${zoom === 'day' ? day + ' ' : ''}${MONTHS[month-1]} ${yearLabel(year)}`;
-}
-function moveDate(year: number, month: number, day: number, zoom: ZoomLevel, offset: number) {
-  if (zoom === 'century' || zoom === 'year') return { year: stepYear(year, offset * (zoom === 'century' ? 100 : 1)), month, day };
-  const date = new Date(0); date.setUTCFullYear(year < 0 ? year + 1 : year, month-1, day);
-  if (zoom === 'month') date.setUTCMonth(date.getUTCMonth()+offset); else date.setUTCDate(date.getUTCDate()+offset);
-  const y = date.getUTCFullYear();
-  return { year: y <= 0 ? y-1 : y, month: date.getUTCMonth()+1, day: date.getUTCDate() };
 }
 export interface TimelineProps { events: HistoricalEvent[]; onSelectEvent?: (event: HistoricalEvent) => void; }
 export function Timeline({ events, onSelectEvent }: TimelineProps) {
@@ -32,26 +26,10 @@ export function Timeline({ events, onSelectEvent }: TimelineProps) {
   const [inputYear,setInputYear] = useState('1789');
   const [era,setEra] = useState('CE');
   const [disabled,setDisabled] = useState<string[]>(() => { try { return JSON.parse(localStorage.getItem('tempus.categories') || '[]'); } catch { return []; } });
-  const pinch = useRef<{distance:number;zoom:ZoomLevel}|null>(null);
-  const drag = useRef<{x:number;y:number}|null>(null);
-  const wheelAt = useRef(0);
   const activeEvents = useMemo(() => events.filter(e => !disabled.includes(e.category)),[events,disabled]);
   const categories = useMemo(() => Array.from(new Set(events.map(e => e.category))).sort((a,b)=>a.localeCompare(b,'fr')),[events]);
   const eventById = useMemo(() => new Map(events.map(e => [e.id,e])),[events]);
   const searchResults = useMemo(() => activeEvents.filter(e => [e.title,e.description,e.place,e.category].some(value=>value?.toLocaleLowerCase('fr').includes(query.trim().toLocaleLowerCase('fr')))).slice(0,100),[activeEvents,query]);
-  const move = useCallback((offset:number) => {
-    const next = moveDate(year,month,day,zoom,offset);
-    if (next.year < START_YEAR || next.year > END_YEAR) return;
-    setYear(next.year); setMonth(next.month); setDay(next.day);
-  },[year,month,day,zoom]);
-  const visible = useMemo(() => Array.from({length:13},(_,i) => moveDate(year,month,day,zoom,i-6)).filter(d => d.year >= START_YEAR && d.year <= END_YEAR),[year,month,day,zoom]);
-  const filtered = useCallback((date:{year:number;month:number;day:number}) => activeEvents.filter(e => {
-    if (zoom === 'century') return e.year < 0 === (date.year < 0) && centuryOf(e.year) === centuryOf(date.year);
-    if (e.year !== date.year) return false;
-    if (zoom === 'year') return true;
-    if (e.month !== date.month) return false;
-    return zoom === 'month' || e.day === date.day;
-  }),[activeEvents,zoom]);
   const setScale = (value:ZoomLevel) => setZoom(value);
   useEffect(() => { localStorage.setItem('tempus.categories',JSON.stringify(disabled)); },[disabled]);
   useEffect(() => {
@@ -61,20 +39,9 @@ export function Timeline({ events, onSelectEvent }: TimelineProps) {
   const openEvent = (event:HistoricalEvent) => { setSelected(event); onSelectEvent?.(event); try { const history: string[] = JSON.parse(localStorage.getItem('tempus.history') || '[]'); localStorage.setItem('tempus.history',JSON.stringify([event.id,...history.filter(id=>id!==event.id)].slice(0,100))); } catch { /* storage unavailable */ } };
   const [favorites,setFavorites] = useState<string[]>(() => { try { return JSON.parse(localStorage.getItem('tempus.favorites') || '[]'); } catch { return []; } });
   const toggleFavorite = (id:string) => { const next = favorites.includes(id) ? favorites.filter(x=>x!==id) : [...favorites,id]; setFavorites(next); localStorage.setItem('tempus.favorites',JSON.stringify(next)); };
-  const touchDistance=(e:React.TouchEvent)=>Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
   return <div className="sites-app">
     <header className="sites-mast"><button aria-label="Ouvrir le menu" onClick={()=>setDrawer(true)}>☰</button><strong className="sites-wordmark">Tempus</strong><span className="sites-period">{formatPeriod(year,month,day,zoom)}</span></header>
-    <main className="sites-rail" aria-label="Frise historique" onWheel={e=>{if(e.ctrlKey)return; const now=Date.now(); if(now-wheelAt.current<140)return; wheelAt.current=now; move(Math.sign(e.deltaY || e.deltaX));}} onTouchStart={e=>{if(e.touches.length===1)drag.current={x:e.touches[0].clientX,y:e.touches[0].clientY};if(e.touches.length===2){drag.current=null;pinch.current={distance:touchDistance(e),zoom};}}} onTouchMove={e=>{if(e.touches.length!==2||!pinch.current)return; const ratio=touchDistance(e)/pinch.current.distance; const index=ZOOM_LEVELS.indexOf(pinch.current.zoom); if(ratio>1.2 || ratio<0.82){setScale(ZOOM_LEVELS[Math.max(0,Math.min(3,index+(ratio>1?1:-1)))]);pinch.current=null;}}} onTouchEnd={e=>{if(drag.current&&e.changedTouches.length){const dx=e.changedTouches[0].clientX-drag.current.x;const dy=e.changedTouches[0].clientY-drag.current.y;if(Math.abs(dx)>45&&Math.abs(dx)>Math.abs(dy)*1.3)move(dx>0?-1:1);}drag.current=null;pinch.current=null;}}>
-      <div className="sites-track">
-        {visible.map((date,i) => <div key={i} className="sites-slot">
-          <time>{formatPeriod(date.year,date.month,date.day,zoom)}</time>
-          <div className="sites-points">{filtered(date).map((event,index)=><button key={event.id} className={`sites-point ${index%2?'below':'above'}`} style={{'--dot':event.color,'--offset':`${42+(index%4)*18}px`} as React.CSSProperties} title={event.title} aria-label={`${eventDateLabel(event)} — ${event.title}`} onClick={()=>openEvent(event)}><span className="sites-dot"/><span className="sites-point-title">{event.title}</span></button>)}</div>
-        </div>)}
-      </div>
-      <div className="sites-axis"/>
-      {!activeEvents.length && <p className="sites-empty">La frise est prête. Les événements seront chargés depuis la base de données à l’étape suivante.</p>}
-      <button className="sites-step sites-prev" aria-label="Période précédente" onClick={()=>move(-1)}>‹</button><button className="sites-step sites-next" aria-label="Période suivante" onClick={()=>move(1)}>›</button>
-    </main>
+    <VirtualRail events={activeEvents} zoom={zoom} date={{year,month,day}} onDate={d=>{setYear(d.year);setMonth(d.month);setDay(d.day);}} onZoom={(z,d)=>{setYear(d.year);setMonth(d.month);setDay(d.day);setScale(z);}} onEvent={openEvent}/>
     <footer className="sites-controls"><select aria-label="Échelle de la frise" value={zoom} onChange={e=>setScale(e.target.value as ZoomLevel)}>{ZOOM_LEVELS.map((value,i)=><option key={value} value={value}>{['Siècles','Années','Mois','Jours'][i]}</option>)}</select><button onClick={()=>setJump(true)}>Aller à une année</button></footer>
     {jump && <div className="sites-backdrop" role="presentation" onClick={()=>setJump(false)}><section className="sites-modal" role="dialog" aria-modal="true" aria-label="Aller à une année" onClick={e=>e.stopPropagation()}><button className="sites-close" onClick={()=>setJump(false)}>×</button><h2>Aller à une année</h2><form onSubmit={e=>{e.preventDefault(); const n=Number(inputYear)*(era==='BCE'?-1:1);if(n>=START_YEAR&&n<=END_YEAR&&n!==0){setYear(n);setJump(false);}}}><label>Année<input type="number" min="1" max={era==='BCE'?-START_YEAR:END_YEAR} value={inputYear} onChange={e=>setInputYear(e.target.value)} required/></label><label>Ère<select value={era} onChange={e=>setEra(e.target.value)}><option value="CE">Après J.-C.</option><option value="BCE">Avant J.-C.</option></select></label><button type="submit">Afficher</button></form></section></div>}
     {selected && <div className="sites-backdrop" onClick={()=>setSelected(null)}><article className="sites-modal sites-event-sheet" role="dialog" aria-modal="true" aria-label={selected.title} onClick={e=>e.stopPropagation()}><button className="sites-close" onClick={()=>setSelected(null)}>×</button><time>{eventDateLabel(selected)}</time><h2>{selected.title}</h2><p className="sites-category" style={{color:selected.color}}>{selected.category}</p>{selected.place&&<strong>{selected.place}</strong>}<p>{selected.description}</p><button onClick={()=>toggleFavorite(selected.id)}>{favorites.includes(selected.id)?'★ Retirer des favoris':'☆ Ajouter aux favoris'}</button></article></div>}
