@@ -1,0 +1,20 @@
+.tempus-virtual-shell{position:absolute;inset:76px 0 72px;overflow:hidden;touch-action:pan-y}
+.tempus-virtual-viewport{position:absolute;inset:0;overflow-x:auto;overflow-y:hidden;overscroll-behavior-x:contain;scrollbar-width:none;touch-action:pan-x;scroll-behavior:auto}
+.tempus-virtual-viewport::-webkit-scrollbar{display:none}
+.tempus-virtual-track{position:relative;display:flex;align-items:stretch;height:100%;width:max-content}
+.tempus-virtual-slot{position:relative;width:156px;flex:0 0 156px;height:100%}
+.tempus-virtual-slot>time{position:absolute;top:calc(50% + 26px);left:0;right:0;text-align:center;font-size:12px;white-space:nowrap;color:#9b968d;pointer-events:none}
+.tempus-virtual-slot.is-current>time{color:#e9c58d;font-weight:700}
+.tempus-virtual-axis{position:absolute;left:0;right:0;top:50%;height:2px;background:linear-gradient(90deg,transparent,#7b6851 12%,#c5a46d 50%,#7b6851 88%,transparent);pointer-events:none}
+.tempus-virtual-event{position:absolute;left:var(--event-x);top:50%;border:0;background:none;color:#e9e4dc;padding:0;width:0;height:0;z-index:2}
+.tempus-virtual-stem{position:absolute;left:-1px;width:2px;height:var(--event-height);background:linear-gradient(var(--event-color),#c5a46d44);pointer-events:none}
+.tempus-virtual-event.above .tempus-virtual-stem{bottom:0}
+.tempus-virtual-event.below .tempus-virtual-stem{top:0}
+.tempus-virtual-dot{position:absolute;left:-7px;top:-7px;width:14px;height:14px;border-radius:50%;background:var(--event-color,#c5a46d);box-shadow:0 0 0 4px #ffffff14,0 0 13px var(--event-color,#c5a46d)}
+.tempus-virtual-title{position:absolute;left:0;transform:translateX(-50%);width:126px;font-size:11px;line-height:1.25;color:#ddd6ca;text-align:center;overflow-wrap:break-word}
+.tempus-virtual-event.above .tempus-virtual-title{bottom:calc(var(--event-height) + 8px)}
+.tempus-virtual-event.below .tempus-virtual-title{top:calc(var(--event-height) + 8px)}
+.tempus-virtual-event:focus-visible .tempus-virtual-dot{outline:2px solid white;outline-offset:5px}
+.tempus-virtual-shell .sites-step{z-index:4}
+.tempus-virtual-shell .sites-empty{z-index:3}
+@media(max-width:480px){.tempus-virtual-title{width:110px;font-size:10px}}
