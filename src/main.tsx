@@ -1,26 +1,19 @@
-import React,{useEffect,useState} from 'react';
-import {createRoot} from 'react-dom/client';
-import './style.css';
-type Zoom='century'|'year'|'month'|'day';
-type HistoricalEvent={id:number;year:number;month:number|null;day:number|null;title:string;description:string;category:string;color:string};
-const levels:Zoom[]=['century','year','month','day'];
-const months=['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
-const api=import.meta.env.VITE_SUPABASE_URL;
-const anon=import.meta.env.VITE_SUPABASE_ANON_KEY;
-function App(){
- const [zoom,setZoom]=useState<Zoom>('year'),[year,setYear]=useState(1789),[month,setMonth]=useState(1),[day,setDay]=useState(1),[events,setEvents]=useState<HistoricalEvent[]>([]),[selected,setSelected]=useState<HistoricalEvent|null>(null),[menu,setMenu]=useState(false),[error,setError]=useState(''),[loading,setLoading]=useState(false);
- const [search,setSearch]=useState('');const touch=React.useRef<{x:number;distance?:number}|null>(null);
- const label=zoom==='century'?String(Math.floor((year-1)/100)+1)+'e siècle':zoom==='year'?String(year):zoom==='month'?months[month-1]+' '+year:day+' '+months[month-1]+' '+year;
- useEffect(()=>{if(!api||!anon){setError('Connexion Supabase non configurée');return;}const controller=new AbortController();setLoading(true);setError('');const params=new URLSearchParams({zoom,year:String(year),month:String(month),day:String(day)});fetch(api+'/functions/v1/tempus-timeline-v1?'+params,{headers:{apikey:anon,Authorization:'Bearer '+anon},signal:controller.signal}).then(async r=>{if(!r.ok)throw Error('API Supabase : '+r.status);return r.json()}).then(d=>setEvents(d.events||[])).catch(e=>{if(!controller.signal.aborted)setError(String(e))}).finally(()=>{if(!controller.signal.aborted)setLoading(false)});return()=>controller.abort()},[zoom,year,month,day]);
- function move(delta:number){if(zoom==='century')setYear(y=>y+delta*100);else if(zoom==='year')setYear(y=>y+delta);else if(zoom==='month')setMonth(m=>{let n=m+delta;if(n<1){setYear(y=>y-1);return 12}if(n>12){setYear(y=>y+1);return 1}return n});else setDay(d=>Math.max(1,Math.min(31,d+delta)))}
- function changeZoom(delta:number){setZoom(z=>levels[Math.max(0,Math.min(3,levels.indexOf(z)+delta))])}
- const visible=events.filter(e=>(e.title+' '+e.category).toLowerCase().includes(search.toLowerCase()));
- return <div className="app" onTouchStart={e=>{const t=e.touches;touch.current={x:t[0].clientX,distance:t.length===2?Math.hypot(t[0].clientX-t[1].clientX,t[0].clientY-t[1].clientY):undefined}}} onTouchMove={e=>{if(e.touches.length===2&&touch.current?.distance){const t=e.touches;const d=Math.hypot(t[0].clientX-t[1].clientX,t[0].clientY-t[1].clientY);if(Math.abs(d-touch.current.distance)>70){changeZoom(d>touch.current.distance?1:-1);touch.current.distance=d}}}} onTouchEnd={e=>{if(touch.current&&!touch.current.distance&&!menu&&!selected){const dx=e.changedTouches[0].clientX-touch.current.x;if(Math.abs(dx)>90)move(dx>0?-1:1)}touch.current=null}}>
- <header><button aria-label="Menu" onClick={()=>setMenu(true)}>☰</button><strong>TEMPUS<span>·</span></strong><button aria-label="Recherche" onClick={()=>setMenu(true)}>⌕</button></header>
- <main><div className="eyebrow">EXPLORER LE TEMPS</div><h1>{label}</h1><p>L'histoire à portée de main</p><nav className="period"><button onClick={()=>move(-1)} aria-label="Précédent">‹</button><b>{label}</b><button onClick={()=>move(1)} aria-label="Suivant">›</button></nav>
- <section className="timeline" aria-label="Frise historique"><div className="axis"/>{visible.slice(0,18).map((e,i)=><button className={'event '+(i%2?'below':'above')} key={e.id} style={{left:(8+84*i/Math.max(visible.length-1,1))+'%','--color':e.color} as React.CSSProperties} onClick={()=>setSelected(e)}><span className="stem"/><span className="dot"/><small>{e.title}</small></button>)}</section><div className="status">{loading?'Chargement…':error||(!visible.length?'Aucun événement publié pour cette période':visible.length+' événements')}</div></main>
- <footer><div className="eyebrow">ÉCHELLE TEMPORELLE</div><div className="zooms"><button onClick={()=>changeZoom(-1)}>−</button>{levels.map(z=><button className={z===zoom?'active':''} key={z} onClick={()=>setZoom(z)}>{({century:'Siècle',year:'Année',month:'Mois',day:'Jour'} as Record<Zoom,string>)[z]}</button>)}<button onClick={()=>changeZoom(1)}>+</button></div></footer>
- {selected&&<div className="scrim" onClick={()=>setSelected(null)}><article className="detail" onClick={e=>e.stopPropagation()}><button className="dismiss" onClick={()=>setSelected(null)}>×</button><div className="eyebrow" style={{color:selected.color}}>{selected.category}</div><h2>{selected.title}</h2><p>{[selected.day,selected.month?months[selected.month-1]:null,selected.year].filter(Boolean).join(' ')}</p><p>{selected.description||'Détail à venir.'}</p></article></div>}
- {menu&&<div className="scrim" onClick={()=>setMenu(false)}><aside className="drawer" onClick={e=>e.stopPropagation()}><div className="drawer-head"><strong>TEMPUS<span>·</span></strong><button onClick={()=>setMenu(false)}>×</button></div><p className="eyebrow">NAVIGATION</p>{['Frise chronologique','Rechercher','Mes favoris','Historique','Catégories historiques','Apparence','Paramètres'].map((s,i)=><button className="nav-item" key={s} onClick={()=>{setMenu(false);if(i===1){const q=window.prompt('Rechercher un événement',search);if(q!==null)setSearch(q)}else if(i>1)window.alert('Fonctionnalité à venir')}}>{s}</button>)}</aside></div>}</div>
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+import { Timeline } from './sites/Timeline';
+import type { HistoricalEvent } from './sites/types';
+
+/**
+ * TEMPUS V0.1 — frontend-only migration.
+ * Historical data will be supplied by the Supabase API in a later step.
+ * Keep the collection empty rather than duplicating or inventing records.
+ */
+const events: HistoricalEvent[] = [];
+
+function App() {
+  return <Timeline events={events} />;
 }
-createRoot(document.getElementById('root')!).render(<React.StrictMode><App/></React.StrictMode>);
+
+const root = document.getElementById('root');
+if (!root) throw new Error('Élément #root introuvable');
+createRoot(root).render(<React.StrictMode><App /></React.StrictMode>);
