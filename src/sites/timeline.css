@@ -11,3 +11,14 @@
 .sites-points .sites-point:focus-visible{outline:2px solid #c5a46d;outline-offset:5px}
 .sites-modal{overscroll-behavior:contain}
 @media(prefers-reduced-motion:reduce){.sites-drawer{transition:none}}
+
+
+/* TEMPUS — identité Sites, capture de référence du 12/11/2026 */
+.sites-app{background:radial-gradient(ellipse at 50% 57%,#202124 0%,#17181b 42%,#101115 85%);color:#e9e3d8}
+.sites-mast{height:110px;gap:15px;padding:env(safe-area-inset-top,0px) 22px 0}
+.sites-mast>button{flex:0 0 54px;width:54px;height:54px;border:1px solid #6c604d;border-radius:50%;background:#1b1c20;color:#c5a46d;font-size:27px;line-height:1}
+.sites-wordmark{font-family:Georgia,'Times New Roman',serif;font-size:31px;font-weight:400;letter-spacing:-.025em;color:#eae2d5}
+.sites-period{font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:29px;color:#cbbba1}
+.sites-controls{bottom:calc(20px + env(safe-area-inset-bottom,0px));gap:0;border:1px solid #45464b;border-radius:999px;background:#292a2e;padding:5px;left:50%;right:auto;transform:translateX(-50%);width:max-content;max-width:calc(100vw - 32px)}
+.sites-controls button,.sites-controls select{border:0;border-radius:999px;background:transparent;color:#e4ded3;padding:10px 14px;font-size:13px}
+@media(max-width:480px){.sites-mast{padding-left:14px;padding-right:14px}.sites-wordmark{font-size:29px}.sites-period{font-size:27px}}
