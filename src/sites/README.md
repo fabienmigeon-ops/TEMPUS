@@ -1,28 +1,29 @@
-# TEMPUS V0.1 — migration Sites vers React + TypeScript
+# TEMPUS V0.1 — Migration React + TypeScript
 
-Branche isolée : `tempus_V0.1`. La branche `main` et le déploiement Cloudflare actuel ne sont pas modifiés.
+Branche : `tempus_V0.1`. Aucune modification de `main` ou du site Cloudflare de production.
 
-## Implémenté
+## Moteur chronologique
 
-- Point d'entrée React utilisant `Timeline` et types TypeScript.
-- Frise plein écran sombre, accent doré, quatre échelles (siècle, année, mois, jour).
-- Navigation par périodes, geste de glissement, zoom tactile par pincement, saut vers une année, dates avant/après J.-C.
-- Points alternés au-dessus et en dessous de la ligne, fiches historiques et favoris.
-- Menu latéral, recherche dans les événements disponibles, historique local, catégories filtrables.
-- Interface vide explicite tant que l'API Supabase n'est pas connectée.
+`VirtualRail.tsx` est le moteur React de la frise. Il remplace la navigation à 13 périodes fixes.
 
-## Différences par rapport à Sites V9
+- Fenêtre de **69 périodes** rendues en permanence, avec recyclage/recentrage de la fenêtre pendant le défilement horizontal.
+- Quatre échelles : siècle, année, mois, jour.
+- Navigation par défilement tactile natif, molette et boutons précédent/suivant.
+- Pincement pour changer d'échelle en conservant une date proche du point focal.
+- Numérotation interne astronomique, sans année zéro affichée (passage de 1 av. J.-C. à 1 apr. J.-C.).
+- Positionnement des points à l'intérieur de la période selon la date, alternance des points sur plusieurs hauteurs.
+- Les données historiques ne sont **pas** embarquées : elles seront chargées depuis Supabase.
 
-- **Non paritaire :** Sites V9 utilise un rail horizontal à défilement continu, une virtualisation des mois et jours, un positionnement par date réelle et un zoom ancré sous les doigts. Le composant React actuel utilise 13 périodes centrées, avec navigation par pas.
-- Les catégories sont dérivées des événements reçus ; sans données elles n'apparaissent pas.
-- Apparence et Paramètres sont encore des entrées non fonctionnelles, comme dans l'export Sites.
-- Les événements historiques sont volontairement absents du frontend : ils seront intégrés directement à Supabase.
-- Le rendu doit être comparé visuellement à Sites sur mobile.
+## Interface React
 
-## Validation
+Menu latéral, recherche dans les événements fournis, favoris et historique locaux, filtres de catégories, fiche d'événement, saut vers une année, habillage sombre et doré.
 
-GitHub Actions est configuré pour exécuter `npm install && npm run build` sur cette branche. **Ne pas considérer la compilation validée tant que l'exécution GitHub Actions n'est pas confirmée réussie.**
+## Contrôles avant préversion
 
-Pour tester localement : `npm install`, `npm run build`, puis `npm run dev`.
+- Le workflow GitHub Actions compile sur chaque push de `tempus_V0.1` avec `npm run build`.
+- **La dernière compilation du nouveau moteur doit être confirmée sur GitHub Actions**.
+- Vérifier sur téléphone : défilement long, pincement à deux doigts, limites -3100/année courante, passage av./apr. J.-C., zoom, menu, orientation et lisibilité.
+- L'absence d'événements est normale avant la connexion Supabase.
+- La comparaison pixel par pixel avec Sites n'a pas encore été effectuée.
 
-Ne pas fusionner dans `main` et ne pas déployer sur Cloudflare avant validation fonctionnelle, visuelle et compilation.
+Ne pas fusionner vers `main` ni déployer avant les contrôles.
