@@ -2,3 +2,12 @@
 .sites-empty{position:absolute;top:calc(50% - 130px);left:50%;transform:translateX(-50%);width:min(82vw,420px);text-align:center;font-size:13px;line-height:1.6;color:#a9a49d;pointer-events:none}
 .sites-rail{touch-action:pan-y}
 .sites-app button:focus-visible,.sites-app select:focus-visible{outline:2px solid #c5a46d;outline-offset:3px}
+
+.sites-drawer{transition:transform 250ms ease;overscroll-behavior:contain}
+.sites-result{display:flex!important;flex-direction:column;gap:5px;line-height:1.35!important}
+.sites-result small{font-size:11px;color:#c5a46d}
+.sites-drawer input[type=search]{width:100%;min-width:0}
+.sites-drawer nav button[disabled]{opacity:.5;cursor:not-allowed}
+.sites-points .sites-point:focus-visible{outline:2px solid #c5a46d;outline-offset:5px}
+.sites-modal{overscroll-behavior:contain}
+@media(prefers-reduced-motion:reduce){.sites-drawer{transition:none}}
