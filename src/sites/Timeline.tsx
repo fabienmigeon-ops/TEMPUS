@@ -5,10 +5,6 @@ import './timeline.css';
 
 const START_YEAR = -3100;
 const END_YEAR = new Date().getFullYear();
-const SLOT_WIDTH = 136;
-const YEARS = Array.from({ length: END_YEAR - START_YEAR }, (_, i) => {
-  const y = START_YEAR + i; return y >= 0 ? y + 1 : y;
-});
 function formatPeriod(year: number, month: number, day: number, zoom: ZoomLevel): string {
   if (zoom === 'century') return `${centuryOf(year)}e siècle ${year < 0 ? 'av. J.-C.' : ''}`;
   if (zoom === 'year') return yearLabel(year);
@@ -34,8 +30,9 @@ export function Timeline({ events, onSelectEvent }: TimelineProps) {
   const [inputYear,setInputYear] = useState('1789');
   const [era,setEra] = useState('CE');
   const [disabled,setDisabled] = useState<string[]>(() => { try { return JSON.parse(localStorage.getItem('tempus.categories') || '[]'); } catch { return []; } });
-  const rail = useRef<HTMLDivElement>(null);
   const pinch = useRef<{distance:number;zoom:ZoomLevel}|null>(null);
+  const drag = useRef<{x:number;y:number}|null>(null);
+  const wheelAt = useRef(0);
   const activeEvents = useMemo(() => events.filter(e => !disabled.includes(e.category)),[events,disabled]);
   const categories = useMemo(() => Array.from(new Set(events.map(e => e.category))),[events]);
   const move = useCallback((offset:number) => {
@@ -63,7 +60,7 @@ export function Timeline({ events, onSelectEvent }: TimelineProps) {
   const touchDistance=(e:React.TouchEvent)=>Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
   return <div className="sites-app">
     <header className="sites-mast"><button aria-label="Ouvrir le menu" onClick={()=>setDrawer(true)}>☰</button><strong className="sites-wordmark">Tempus</strong><span className="sites-period">{formatPeriod(year,month,day,zoom)}</span></header>
-    <main ref={rail} className="sites-rail" aria-label="Frise historique" onWheel={e=>{if(e.ctrlKey)return; move(Math.sign(e.deltaY || e.deltaX));}} onTouchStart={e=>{if(e.touches.length===2)pinch.current={distance:touchDistance(e),zoom};}} onTouchMove={e=>{if(e.touches.length!==2||!pinch.current)return; const ratio=touchDistance(e)/pinch.current.distance; const index=ZOOM_LEVELS.indexOf(pinch.current.zoom); if(ratio>1.2 || ratio<0.82){setScale(ZOOM_LEVELS[Math.max(0,Math.min(3,index+(ratio>1?1:-1)))]);pinch.current=null;}}} onTouchEnd={()=>{pinch.current=null;}}>
+    <main className="sites-rail" aria-label="Frise historique" onWheel={e=>{if(e.ctrlKey)return; const now=Date.now(); if(now-wheelAt.current<140)return; wheelAt.current=now; move(Math.sign(e.deltaY || e.deltaX));}} onTouchStart={e=>{if(e.touches.length===1)drag.current={x:e.touches[0].clientX,y:e.touches[0].clientY};if(e.touches.length===2){drag.current=null;pinch.current={distance:touchDistance(e),zoom};}}} onTouchMove={e=>{if(e.touches.length!==2||!pinch.current)return; const ratio=touchDistance(e)/pinch.current.distance; const index=ZOOM_LEVELS.indexOf(pinch.current.zoom); if(ratio>1.2 || ratio<0.82){setScale(ZOOM_LEVELS[Math.max(0,Math.min(3,index+(ratio>1?1:-1)))]);pinch.current=null;}}} onTouchEnd={e=>{if(drag.current&&e.changedTouches.length){const dx=e.changedTouches[0].clientX-drag.current.x;const dy=e.changedTouches[0].clientY-drag.current.y;if(Math.abs(dx)>45&&Math.abs(dx)>Math.abs(dy)*1.3)move(dx>0?-1:1);}drag.current=null;pinch.current=null;}}>
       <div className="sites-track">
         {visible.map((date,i) => <div key={i} className="sites-slot">
           <time>{formatPeriod(date.year,date.month,date.day,zoom)}</time>
@@ -71,6 +68,7 @@ export function Timeline({ events, onSelectEvent }: TimelineProps) {
         </div>)}
       </div>
       <div className="sites-axis"/>
+      {!activeEvents.length && <p className="sites-empty">La frise est prête. Les événements seront chargés depuis la base de données à l’étape suivante.</p>}
       <button className="sites-step sites-prev" aria-label="Période précédente" onClick={()=>move(-1)}>‹</button><button className="sites-step sites-next" aria-label="Période suivante" onClick={()=>move(1)}>›</button>
     </main>
     <footer className="sites-controls"><select aria-label="Échelle de la frise" value={zoom} onChange={e=>setScale(e.target.value as ZoomLevel)}>{ZOOM_LEVELS.map((value,i)=><option key={value} value={value}>{['Siècles','Années','Mois','Jours'][i]}</option>)}</select><button onClick={()=>setJump(true)}>Aller à une année</button></footer>
