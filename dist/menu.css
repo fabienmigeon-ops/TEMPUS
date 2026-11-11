@@ -1,0 +1,30 @@
+:root{--gold:#C5A46D}
+.mast{align-items:center;left:max(clamp(12px,3vw,48px),env(safe-area-inset-left));right:max(clamp(12px,3vw,48px),env(safe-area-inset-right));gap:10px}
+.mast .period{margin-left:auto;text-align:right}
+#menuOpen,#menuClose{width:44px;height:44px;border:1px solid #c5a46d52;border-radius:50%;background:#171a20;color:var(--gold);font:22px system-ui;cursor:pointer;pointer-events:auto;flex:none}
+#drawer{position:fixed;inset:0 auto 0 0;margin:0;width:min(85%,320px);height:100dvh;max-height:none;padding:max(16px,env(safe-area-inset-top)) 16px max(24px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left));border:0;border-right:1px solid #c5a46d40;border-radius:0;background:#10131B;overscroll-behavior:contain;touch-action:pan-y;transform:translateX(-100%);transition:transform 250ms ease;box-shadow:none}
+#drawer.active{transform:translateX(0)}
+#drawer::backdrop{background:rgb(3 5 10 / 0%);transition:background 250ms}
+#drawer.active::backdrop{background:rgb(3 5 10 / 64%)}
+#drawer header{display:flex;align-items:center;justify-content:space-between;padding:0 4px 17px;border-bottom:1px solid #ffffff20}
+#drawer .wordmark{font-size:32px}
+#drawer button{float:none}
+#drawer h2{margin:27px 8px 9px}
+#menuHome h2{font:600 11px system-ui;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
+#menuHome button,#menuBack,.result{width:100%;display:flex;align-items:center;text-align:left;gap:10px;background:none;border:0;border-radius:8px;padding:11px 12px}
+#menuHome button:enabled:after{content:'›';font-size:21px;margin-left:auto;color:var(--gold)}
+#drawer button[aria-current],#drawer nav button:enabled:hover,.result:hover{background:#c5a46d15;color:#ead1a5}
+#menuHome button:disabled{color:#999da6;cursor:default}
+#menuHome small{margin-left:auto;font-size:11px}
+#menuBack{color:var(--gold);margin-top:8px}
+#pageTitle{font-size:26px}
+#pageBody input[type=search]{width:100%;border:1px solid #49505a;border-radius:8px;padding:12px;background:#191e27;margin:8px 0}
+#pageBody label,.result{min-height:46px;border-bottom:1px solid #ffffff15}
+#pageBody label{display:flex;align-items:center;gap:10px;font-size:14px;cursor:pointer}
+#pageBody label i{width:9px;height:9px;border-radius:50%;flex:none}
+#pageBody input[type=checkbox]{margin-left:auto;accent-color:var(--gold);width:18px;height:18px;flex:none}
+#drawer .result{flex-direction:column;align-items:start;gap:4px;line-height:1.35}
+.result small{color:var(--gold)}
+#favoriteButton{float:none;color:var(--gold);margin:12px 0}
+.event.filtered{visibility:hidden}
+@media(prefers-reduced-motion:reduce){#drawer,#drawer::backdrop{transition:none}}
