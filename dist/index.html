@@ -1,0 +1,381 @@
+<!DOCTYPE html><html lang="fr"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#101114"><title>Tempus · La frise historique</title>
+<link rel="stylesheet" href="timeline.css">
+<link rel="stylesheet" href="menu.css">
+<header class="mast"><button id="menuOpen" aria-label="Ouvrir le menu" aria-controls="drawer" aria-expanded="false"><span aria-hidden="true">☰</span></button><div class="wordmark"><i aria-hidden="true"></i>Tempus</div><div class="period" id="period">1789</div></header>
+<main class="rail" id="rail" aria-label="Frise historique annuelle"><div class="track" id="centuries" hidden></div><div class="track" id="track"></div><div class="track" id="months" hidden></div><div class="track" id="days" hidden></div></main>
+<div class="controls"><select class="jump" id="scale" aria-label="Échelle de la frise"><option value="-1">Siècles</option><option value="0" selected>Années</option><option value="1">Mois</option><option value="2">Jours</option></select><button class="jump" id="jump">Aller à une année</button></div>
+<dialog id="picker" aria-labelledby="jumpTitle"><button id="cancel">Fermer</button><h2 id="jumpTitle">Aller à une année</h2><form id="go"><label for="yearInput">Année</label><input id="yearInput" type="number" min="1" step="1" required inputmode="numeric"><label for="era">Ère</label><select id="era"><option value="1">Après J.-C.</option><option value="-1">Avant J.-C.</option></select><button>Afficher</button></form></dialog>
+<dialog id="sheet" aria-labelledby="title"><button id="closeSheet" aria-label="Fermer la fiche">Fermer</button><time id="date"></time><h2 id="title"></h2><span id="category"></span><b id="place"></b><p id="story"></p><details><summary>Comprendre l’enjeu</summary><p id="why"></p></details><button id="favoriteButton"></button><p><a href="https://www.larousse.fr/encyclopedie/divers/R%C3%A9volution_fran%C3%A7aise/140733" target="_blank" rel="noopener">Consulter l’encyclopédie Larousse ↗</a></p></dialog>
+<dialog id="drawer" aria-labelledby="drawerTitle">
+  <header><div class="wordmark"><i aria-hidden="true"></i>Tempus</div><button id="menuClose" aria-label="Fermer le menu">×</button></header>
+  <nav id="menuHome" aria-label="Menu principal">
+    <h2 id="drawerTitle">Navigation</h2>
+    <button data-page="frise" aria-current="page">Frise chronologique</button>
+    <button data-page="search">Rechercher</button>
+    <button data-page="favorites">Mes favoris</button>
+    <button data-page="history">Historique</button>
+    <h2>Personnalisation</h2>
+    <button data-page="categories">Catégories historiques</button>
+    <button disabled>Apparence <small>À venir</small></button>
+    <button disabled>Paramètres <small>À venir</small></button>
+  </nav>
+  <section id="menuPage" hidden><button id="menuBack">‹ Menu principal</button><h2 id="pageTitle" tabindex="-1"></h2><div id="pageBody"></div></section>
+</dialog>
+<script src="1789.js"></script>
+
+<script>
+const events=[
+["5 mai 1789","Ouverture des États généraux","Versailles","Louis XVI réunit des représentants du clergé, de la noblesse et du tiers état pour sortir le royaume de sa crise financière.","Une question divise les députés dès leur arrivée. Si chaque ordre dispose d’une voix, les deux premiers peuvent toujours l’emporter sur le tiers état.",1],
+["17 juin 1789","Naissance de l’Assemblée nationale","Versailles","Les députés du tiers état, rejoints par des membres du clergé, se proclament Assemblée nationale.","En se donnant ce nom, les députés revendiquent le droit de parler au nom de toute la nation."],
+["20 juin 1789","Serment du Jeu de paume","Versailles","Trouvant leur salle fermée, les députés se rassemblent dans une salle de jeu voisine. Ils jurent de rester réunis jusqu’à ce que la France ait une constitution.","Le serment engage chacun des députés envers les autres. Une décision royale ne suffira plus à les disperser."],
+["14 juillet 1789","Prise de la Bastille","Paris","Des Parisiens qui cherchent de la poudre se rendent devant la Bastille. Après plusieurs heures de combat, la forteresse capitule.","Cette prison royale incarnait la possibilité d’être enfermé sur ordre du roi. Sa chute donne à l’intervention du peuple de Paris un retentissement qui dépasse largement la capitale.",1],
+["4 août 1789","La nuit du 4 août","Versailles","Alors que les campagnes sont agitées par la Grande Peur, des députés proposent de renoncer aux privilèges. Les interventions se succèdent pendant la nuit.","La fin de la société de privilèges est engagée. Certaines redevances seigneuriales restent pourtant soumises au rachat jusqu’en 1793."],
+["26 août 1789","Déclaration des droits de l’homme et du citoyen","Versailles","L’Assemblée adopte dix-sept articles qui proclament notamment la liberté, l’égalité en droits et la souveraineté nationale.","Ces principes donnent aux citoyens des critères pour juger les actes du pouvoir. Leur application aux femmes et aux populations des colonies devient un enjeu de lutte."],
+["21 juin 1791","Le roi arrêté à Varennes","Varennes-en-Argonne","Louis XVI et sa famille quittent Paris en secret. Reconnus en chemin, ils sont arrêtés à Varennes et ramenés dans la capitale.","Comment confier le pouvoir exécutif à un roi qui a tenté de partir ? La fuite ouvre une crise de confiance."],
+["21 septembre 1792","Abolition de la royauté","Paris","À sa première séance, la Convention nationale abolit la royauté. Dès le lendemain, les actes publics sont datés de l’an premier de la République.","La transmission héréditaire de la couronne cesse d’organiser le pouvoir en France.",1],
+["21 janvier 1793","Exécution de Louis XVI","Paris","Condamné à mort à l’issue de son procès devant la Convention, Louis XVI est guillotiné sur la place de la Révolution, aujourd’hui place de la Concorde.","Les députés ont dû décider si le roi déchu pouvait être jugé et qui avait autorité pour prononcer sa peine."],
+["27 juillet 1794","Arrestation de Robespierre","Paris","Le 9 thermidor an II, la Convention ordonne l’arrestation de Robespierre et de plusieurs de ses alliés. Il est exécuté le lendemain.","Sa chute ouvre une lutte politique sur le sort des institutions et des pratiques du gouvernement révolutionnaire.",1],
+["9–10 novembre 1799","Coup d’État de Brumaire","Paris et Saint-Cloud","Bonaparte et ses alliés renversent le Directoire au cours des journées des 18 et 19 brumaire. Un Consulat provisoire est établi.","Le changement de régime ouvre la voie à la concentration du pouvoir entre les mains du Premier consul.",1]
+];
+const el=id=>document.getElementById(id), rail=el('rail'),sheet=el('sheet');
+const monthNames = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+const firstYear = -3100;
+const today = new Date();
+const lastYear = today.getFullYear();
+const byYear = new Map();
+const legacyIds = ['013','017','019','028','036','039'];
+const legacyById = new Map(legacyIds.map((suffix,i)=>['TMP-1789-'+suffix,events[i]]));
+function dateLabel(iso) {
+  const [year,month,day] = iso.split('-').map(Number);
+  return (day === 1 ? '1er' : day)+' '+monthNames[month-1]+' '+year;
+}
+function register(record, legacy) {
+  const start = Date.parse(record.date_debut) / 86400000;
+  const end = record.date_fin ? Date.parse(record.date_fin) / 86400000 : start;
+  const year = Number(record.date_debut.slice(0,4));
+  const event = {...record,start,end,legacy,label:dateLabel(record.date_debut)+(record.date_fin?' – '+dateLabel(record.date_fin):'')};
+  if (!byYear.has(year)) byYear.set(year, []);
+  byYear.get(year).push(event);
+}
+for (const record of importedEvents) register(record, legacyById.get(record.id));
+window.tempusRegister = register;
+window.tempusByYear = byYear;
+window.tempusRefresh = () => { for (const entries of byYear.values()) entries.sort((a,b)=>a.start-b.start); if (typeof render === "function") render(); };
+for (const legacy of events.slice(legacyIds.length)) {
+  const [days, month, year] = legacy[0].split(' ');
+  const [start,end] = days.split('–');
+  const prefix = year+'-'+String(monthNames.indexOf(month)+1).padStart(2,'0')+'-';
+  register({date_debut:prefix+start.padStart(2,'0'), date_fin:end?prefix+end.padStart(2,'0'):'', titre:legacy[1], lieu:legacy[2]},legacy);
+}
+for (const entries of byYear.values()) entries.sort((a,b)=>a.start-b.start);
+function show(event) {
+  el('date').textContent=event.label;
+  el('title').textContent=event.titre;
+  el('place').textContent=event.lieu;
+  el('story').textContent=event.legacy?.[3] || event.description;
+  el('category').textContent=[event.categorie,event.importance].filter(Boolean).join(' · ');
+  el('why').textContent=event.legacy?.[4] || '';
+  const details=sheet.querySelector('details');
+  details.open=false;
+  details.hidden=!event.legacy;
+  sheet.querySelector('a').parentElement.hidden=!event.legacy;
+  recordVisit(event);
+  sheet.showModal();
+}
+function addPoints(cell, entries) {
+  if (entries) {
+    const points = document.createElement('div');
+    points.className = 'points';
+
+    for (const [index,event] of entries.entries()) {
+      const point = document.createElement('button');
+      const seed = Math.abs(event.start);
+      const below = (index + Math.abs(entries[0].start)) % 2 === 1;
+      point.className = below ? 'event below' : 'event';
+      point.style.setProperty('--height', [0.46,0.78,0.59,1,0.69,0.88,0.53][(seed+index*3)%7]);
+      if (event.importance === 'majeure') point.classList.add('major');
+      point.dataset.category = event.categorie || '';
+      point.classList.toggle('filtered', disabledCategories.has(event.categorie));
+      point.title = event.titre;
+      point.setAttribute('aria-label', event.label + ' — ' + event.titre);
+      if (event.couleur) point.style.setProperty('--dot', event.couleur);
+      if (event.id) point.dataset.event = event.id;
+      point.setAttribute('aria-haspopup', 'dialog');
+      point.onclick = () => show(event);
+      points.append(point);
+    }
+    cell.append(points);
+  }
+}
+function loadList(name) {
+  try {
+    const value = JSON.parse(localStorage.getItem('tempus.'+name));
+    return Array.isArray(value) ? value.filter(item => typeof item === 'string') : [];
+  } catch { return []; }
+}
+const disabledCategories = new Set(loadList('categories'));
+const years = document.createDocumentFragment();
+for (let year = firstYear; year <= lastYear; year++) {
+  if (year === 0) continue;
+  const cell = document.createElement('div');
+  cell.className = 'year';
+  cell.id = 'year-' + year;
+  const label = document.createElement('time');
+  label.textContent = year < 0 ? -year + ' av. J.-C.' : String(year);
+  cell.append(label);
+  const entries = byYear.get(year);
+  if (entries) cell.style.width = Math.max(112, entries.length * 26 + 24) + 'px';
+  addPoints(cell, entries);
+  years.append(cell);
+}
+el('track').append(years);
+const monthWidth = 144;
+const annual = el('track'), monthly = el('months');
+function indexOfYear(year) { return year - firstYear - (year > 0 ? 1 : 0); }
+function yearAt(index) { const year = firstYear + index; return year >= 0 ? year + 1 : year; }
+const centuries = el('centuries');
+const centuryWidth = 240;
+const yearsPerCentury = 100;
+const yearCount = indexOfYear(lastYear) + 1;
+function centuryLabel(year) {
+  const n = Math.ceil(Math.abs(year)/100);
+  const roman = 'X'.repeat(Math.floor(n/10)) + ['','I','II','III','IV','V','VI','VII','VIII','IX'][n%10];
+  return roman + (n===1?'er':'e') + ' siècle' + (year<0?' av. J.-C.':'');
+}
+for (let start=0; start<yearCount; start+=yearsPerCentury) {
+  const first=yearAt(start), last=yearAt(Math.min(start+99,yearCount-1));
+  const cell=document.createElement('div');
+  cell.className='year';
+  cell.style.width=centuryWidth+'px';
+  const label=document.createElement('time');
+  label.textContent=centuryLabel(first);
+  const range=document.createElement('span');
+  range.textContent=Math.abs(first)+' – '+Math.abs(last);
+  label.append(range);
+  cell.append(label);
+  const populated=[...byYear.keys()].filter(year=>year>=first && year<=last).sort((a,b)=>a-b);
+  if (populated.length) {
+    const button=document.createElement('button');
+    button.className='century-count';
+    const updateCount=()=>{
+      const visible=populated.flatMap(year=>byYear.get(year)).filter(e=>!disabledCategories.has(e.categorie));
+      const count=visible.length;
+      button.hidden=!count;
+      button.textContent=count+' événement'+(count>1?'s':'');
+      button.setAttribute('aria-label',button.textContent+' · '+centuryLabel(first)+' · explorer par année');
+      button.onclick=()=>switchScale(0,{year:Number(visible[0].date_debut.slice(0,4))},rail.clientWidth/2);
+    };
+    updateCount();
+    centuries.addEventListener('filterchange',updateCount);
+    cell.append(button);
+  }
+  centuries.append(cell);
+}
+const monthCount = indexOfYear(lastYear) * 12 + today.getMonth() + 1;
+const monthEntries = new Map();
+for (const [year, entries] of byYear) {
+  for (let m=0; m<12; m++) {
+    const from = dayNumber(year,m), until = dayNumber(year,m+1);
+    const selected = entries.filter(e=>e.start<until && e.end>=from);
+    if (selected.length) monthEntries.set(indexOfYear(year)*12+m, selected);
+  }
+}
+const monthOffsets = new Float64Array(monthCount+1);
+for (let i=0; i<monthCount; i++) {
+  monthOffsets[i+1]=monthOffsets[i]+Math.max(monthWidth,(monthEntries.get(i)?.length || 0)*26+24);
+}
+monthly.style.width = monthOffsets[monthCount] + 'px';
+function monthAt(position) {
+  let low=0, high=monthCount-1;
+  while (low<high) {
+    const mid=Math.ceil((low+high)/2);
+    if (monthOffsets[mid]<=position) low=mid; else high=mid-1;
+  }
+  return low;
+}
+// UTC keeps consecutive days equally spaced across daylight-saving transitions.
+const dayMs = 86400000;
+function dayNumber(year, month = 0, day = 1) {
+  const date = new Date(0);
+  date.setUTCFullYear(year < 0 ? year + 1 : year, month, day);
+  return date.getTime() / 86400000;
+}
+function dayParts(number) {
+  const date = new Date(number * dayMs);
+  const year = date.getUTCFullYear();
+  return {year: year <= 0 ? year - 1 : year, month:date.getUTCMonth(), day:date.getUTCDate()};
+}
+const firstDay = dayNumber(firstYear);
+const lastDay = dayNumber(lastYear, today.getMonth(), today.getDate());
+const daily = el('days');
+const windowDays = Math.min(2048, lastDay - firstDay + 1);
+daily.style.width = windowDays * monthWidth + 'px';
+let dayStart = firstDay;
+let level = 0;
+function windowStart(number) {
+  return Math.max(firstDay, Math.min(number - Math.floor(windowDays / 2), lastDay - windowDays + 1));
+}
+function renderDetail() {
+  if (level <= 0) return;
+  const days = level === 2;
+  const track = days ? daily : monthly;
+  if (days) {
+    const middle = Math.floor((rail.scrollLeft + rail.clientWidth / 2) / monthWidth);
+    if (middle < 128 || middle > windowDays - 128) {
+      const next = windowStart(dayStart + middle);
+      if (next !== dayStart) {
+        const shift = dayStart - next;
+        dayStart = next;
+        rail.scrollLeft += shift * monthWidth;
+      }
+    }
+  }
+  const base = days ? dayStart : 0;
+  const count = days ? windowDays : monthCount;
+  const first = days ? base + Math.max(0, Math.floor(rail.scrollLeft / monthWidth) - 4) : Math.max(0,monthAt(rail.scrollLeft)-4);
+  const end = days ? base + Math.min(count, Math.ceil((rail.scrollLeft + rail.clientWidth) / monthWidth) + 4) : Math.min(count,monthAt(rail.scrollLeft+rail.clientWidth)+5);
+  for (const cell of [...track.children]) {
+    const index = Number(cell.dataset.index);
+    if (index < first || index >= end) cell.remove();
+  }
+  for (let index = first; index < end; index++) {
+    const id = (days ? 'day-' : 'month-') + index;
+    let cell = el(id);
+    if (cell) {
+      cell.style.left = (days ? (index-base)*monthWidth : monthOffsets[index]) + 'px';
+      continue;
+    }
+    const {year, month, day} = days ? dayParts(index) : {year:yearAt(Math.floor(index / 12)), month:index % 12};
+    const name = monthNames[month];
+    cell = document.createElement('div');
+    cell.className = 'year';
+    cell.id = id;
+    cell.dataset.index = index;
+    if (!days) cell.style.width=(monthOffsets[index+1]-monthOffsets[index])+'px';
+    cell.style.left = (days ? (index-base)*monthWidth : monthOffsets[index]) + 'px';
+    const label = document.createElement('time');
+    label.textContent = days ? (day === 1 ? '1er' : day) + ' ' + name : name;
+    const yearLabel = document.createElement('span');
+    yearLabel.textContent = year < 0 ? -year + ' av. J.-C.' : year;
+    label.append(yearLabel);
+    cell.append(label);
+    const entries = days ? byYear.get(year)?.filter(e=>e.start<=index && e.end>=index) : monthEntries.get(index);
+    addPoints(cell, entries);
+    const next = Array.from(track.children).find(item => Number(item.dataset.index) > index);
+    track.insertBefore(cell, next || null);
+  }
+}
+function updatePeriod() {
+  const {year,month,day}=dateUnder(rail.clientWidth/2);
+  const date = year<0 ? -year+' av. J.-C.' : String(year);
+  el('period').textContent = level===-1 ? centuryLabel(year) : level===0 ? date : (level===2 ? day+' ' : '')+monthNames[month]+' '+date;
+}
+rail.addEventListener('scroll', () => {renderDetail(); updatePeriod()}, {passive:true});
+window.addEventListener('resize', renderDetail);
+function dateUnder(x) {
+  const position = rail.scrollLeft + x;
+  if (level === -1) {
+    const within = Math.max(0,position-centuries.firstElementChild.offsetLeft);
+    const group = Math.min(centuries.children.length-1,Math.floor(within/centuryWidth));
+    const start = group*yearsPerCentury;
+    const length = Math.min(yearsPerCentury,yearCount-start);
+    const fraction = Math.min(0.999999,within/centuryWidth-group);
+    return {year:yearAt(start+Math.floor(fraction*length))};
+  }
+  const slot = Math.max(0, Math.floor(position / monthWidth));
+  if (level === 2) return dayParts(Math.min(lastDay, dayStart + slot));
+  if (level === 1) {
+    const month = monthAt(position);
+    return {year:yearAt(Math.floor(month / 12)), month:month % 12};
+  }
+  let low = 0, high = annual.children.length - 1;
+  while (low < high) {
+    const mid = Math.floor((low + high + 1) / 2);
+    if (annual.children[mid].offsetLeft <= position) low = mid;
+    else high = mid - 1;
+  }
+  return {year:yearAt(low), month:0};
+}
+function centerDate({year, month = 0, day = 1}, x) {
+  if (level === -1) {
+    const index=indexOfYear(year), group=Math.floor(index/yearsPerCentury);
+    const start=group*yearsPerCentury;
+    const length=Math.min(yearsPerCentury,yearCount-start);
+    rail.scrollLeft=centuries.children[group].offsetLeft+(index-start+0.5)*centuryWidth/length-x;
+    return;
+  }
+  if (level === 0) {
+    const cell = el('year-' + year);
+    rail.scrollLeft = cell.offsetLeft + cell.offsetWidth / 2 - x;
+    return;
+  }
+  let index = indexOfYear(year) * 12 + month;
+  if (level === 2) {
+    const number = dayNumber(year, month, day);
+    dayStart = windowStart(number);
+    index = number - dayStart;
+  }
+  rail.scrollLeft = (level === 2 ? (index+0.5)*monthWidth : (monthOffsets[index]+monthOffsets[index+1])/2) - x;
+  renderDetail();
+}
+function switchScale(next, date, x) {
+  level = next;
+  [centuries, annual, monthly, daily].forEach((track, index) => track.hidden = index-1 !== level);
+  el('scale').value = String(level);
+  rail.setAttribute('aria-label', 'Frise historique ' + ['par siècle','annuelle','mensuelle','quotidienne'][level+1]);
+  centerDate(date, x);
+  updatePeriod();
+}
+el('scale').onchange = () => {
+  const x = rail.clientWidth / 2;
+  switchScale(Number(el('scale').value), dateUnder(x), x);
+};
+let pinch = null;
+function distance(a, b) { return Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY); }
+rail.addEventListener('touchstart', e => {
+  if (e.touches.length !== 2) return;
+  e.preventDefault();
+  const [a,b] = e.touches;
+  const x = (a.clientX + b.clientX) / 2;
+  pinch = { initial:distance(a,b), x, date:dateUnder(x), changed:false };
+}, {passive:false});
+rail.addEventListener('touchmove', e => {
+  if (!pinch || e.touches.length !== 2) return;
+  e.preventDefault();
+  if (pinch.changed || !pinch.initial) return;
+  const ratio = distance(...e.touches) / pinch.initial;
+  const direction = ratio > 1.2 ? 1 : ratio < 0.82 ? -1 : 0;
+  const next = Math.max(-1, Math.min(2, level + direction));
+  if (next !== level) {
+    switchScale(next, pinch.date, pinch.x);
+    pinch.changed = true;
+  }
+}, {passive:false});
+function endPinch(e) { if (e.touches.length < 2) pinch = null; }
+rail.addEventListener('touchend', endPinch);
+rail.addEventListener('touchcancel', endPinch);
+const input = el('yearInput'), era = el('era'), picker = el('picker');
+function setLimit() { input.max = era.value === '-1' ? -firstYear : lastYear; }
+era.onchange = setLimit;
+setLimit();
+el('jump').onclick = () => {picker.showModal(); input.focus()};
+el('cancel').onclick = () => picker.close();
+el('go').onsubmit = event => {
+  event.preventDefault();
+  picker.close();
+  centerDate({year:Number(input.value) * Number(era.value)}, rail.clientWidth / 2);
+};
+rail.addEventListener('wheel', event => {
+  if (event.ctrlKey || Math.abs(event.deltaX) >= Math.abs(event.deltaY)) return;
+  event.preventDefault();
+  const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? rail.clientWidth : 1;
+  rail.scrollLeft += event.deltaY * unit;
+}, {passive:false});
+el('closeSheet').onclick = () => sheet.close();
+sheet.addEventListener('click', event => {
+  if (event.target !== sheet) return;
+  const rect = sheet.getBoundingClientRect();
+  if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) sheet.close();
+});
+centerDate({year:1789}, rail.clientWidth/2);
+</script><script src="menu.js"></script><script src="api.js"></script></html>
