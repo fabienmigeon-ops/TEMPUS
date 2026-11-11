@@ -1,7 +1,7 @@
 name: Vérification frontend
 on:
   push:
-    branches: [main]
+    branches: [main, tempus_V0.1]
   pull_request:
     branches: [main]
 jobs:
