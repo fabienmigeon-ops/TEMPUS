@@ -19,7 +19,19 @@
       lieu: event.place || event.lieu || '',
       categorie: event.category || event.categorie || '',
       couleur: event.color || event.couleur || '#C5A46D',
-      importance: event.importance || 'normale',\n      image_url: event.image_url || event.imageUrl || '',\n      source_url: event.source_url || event.sourceUrl || '',\n      resume: event.resume || event.summary || '',\n      contexte: event.contexte || event.context || '',\n      causes: event.causes || '',\n      deroulement: event.deroulement || event.narrative || '',\n      consequences: event.consequences || '',\n      importance_historique: event.importance_historique || event.significance || '',\n      acteurs: event.acteurs || event.actors || [],\n      lieux: event.lieux || event.places || [],\n      archives: event.archives || event.media || [],\n      sources: event.sources || event.references || []
+      importance: event.importance || 'normale',
+      image_url: event.image_url || event.imageUrl || '',
+      source_url: event.source_url || event.sourceUrl || '',
+      resume: event.resume || event.summary || '',
+      contexte: event.contexte || event.context || '',
+      causes: event.causes || '',
+      deroulement: event.deroulement || event.narrative || '',
+      consequences: event.consequences || '',
+      importance_historique: event.importance_historique || event.significance || '',
+      acteurs: event.acteurs || event.actors || [],
+      lieux: event.lieux || event.places || [],
+      archives: event.archives || event.media || [],
+      sources: event.sources || event.references || []
     };
   }
   function startFrontend(records) {
@@ -30,7 +42,10 @@
     document.body.appendChild(script);
     const menu = document.createElement('script');
     menu.src = 'menu.js';
-    document.body.appendChild(menu);\n    const v2 = document.createElement('script');\n    v2.src = 'event-v2.js';\n    document.body.appendChild(v2);
+    document.body.appendChild(menu);
+    const v2 = document.createElement('script');
+    v2.src = 'event-v2.js';
+    document.body.appendChild(v2);
   }
   function showError(message) {
     console.error('TEMPUS: ' + message);
