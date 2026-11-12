@@ -49,4 +49,4 @@ form{display:grid;gap:12px;clear:both}
 /* V2-only life-event markers: categories and timeline mechanics stay unchanged. */
 .event.life-birth{--dot:#78c4a7!important}
 .event.life-death{--dot:#b5a1ce!important}
-.event.life-event{outline:1px solid var(--dot);outline-offset:3px}
+.event.life-event{outline:none}
