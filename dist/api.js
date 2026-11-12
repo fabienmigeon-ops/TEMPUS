@@ -20,6 +20,7 @@
       categorie: event.category || event.categorie || '',
       couleur: event.color || event.couleur || '#C5A46D',
       importance: event.importance || 'normale',
+      event_type: event.event_type || 'milestone',
       image_url: event.image_url || event.imageUrl || '',
       source_url: event.source_url || event.sourceUrl || '',
       resume: event.resume || event.summary || '',
