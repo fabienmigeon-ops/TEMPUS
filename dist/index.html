@@ -79,6 +79,7 @@ function addPoints(cell, entries) {
       point.style.setProperty('--height', [0.46,0.78,0.59,1,0.69,0.88,0.53][(seed+index*3)%7]);
       if (event.importance === 'majeure') point.classList.add('major');
       point.dataset.category = event.categorie || '';
+      if (event.event_type === 'birth' || event.event_type === 'death') {point.dataset.eventType = event.event_type;point.classList.add('life-event',event.event_type === 'birth' ? 'life-birth' : 'life-death');}
       point.classList.toggle('filtered', disabledCategories.has(event.categorie));
       point.title = event.titre;
       point.setAttribute('aria-label', event.label + ' — ' + event.titre);
