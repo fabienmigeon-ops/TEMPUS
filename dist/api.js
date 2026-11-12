@@ -1,6 +1,6 @@
 /* TEMPUS — API PostgreSQL. No demonstration data or silent fallback. */
 (() => {
-  const endpoint = 'https://tgwmqrvcovigpmmnrjtp.supabase.co/functions/v1/tempus-events';
+  const endpoint = 'https://tgwmqrvcovigpmmnrjtp.supabase.co/functions/v1/tempus-events-v2';
   const anonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRnd21xcnZjb3ZpZ3BtbW5yanRwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ0MDk0NTQsImV4cCI6MjEwOTk4NTQ1NH0.BnT8P5HIRJW_q_td9MFVU-0dlfVzw_-cSl70WBBN0hQ';
   function iso(year, month = 1, day = 1) {
     const y = Number(year), m = Number(month), d = Number(day);
@@ -31,7 +31,15 @@
       acteurs: event.acteurs || event.actors || [],
       lieux: event.lieux || event.places || [],
       archives: event.archives || event.media || [],
-      sources: event.sources || event.references || []
+      sources: event.sources || event.references || [],
+      introduction: event.introduction || '',
+      debats: event.debats || '',
+      faits_cles: event.faits_cles || [],
+      anecdotes: event.anecdotes || [],
+      sections: event.sections || [],
+      image_alt: event.image_alt || '',
+      image_credit: event.image_credit || '',
+      image_status: event.image_status || ''
     };
   }
   function startFrontend(records) {
