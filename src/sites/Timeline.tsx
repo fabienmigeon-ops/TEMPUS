@@ -12,8 +12,8 @@ function formatPeriod(year: number, month: number, day: number, zoom: ZoomLevel)
   if (zoom === 'year') return yearLabel(year);
   return `${zoom === 'day' ? day + ' ' : ''}${MONTHS[month-1]} ${yearLabel(year)}`;
 }
-export interface TimelineProps { events: HistoricalEvent[]; onSelectEvent?: (event: HistoricalEvent) => void; }
-export function Timeline({ events, onSelectEvent }: TimelineProps) {
+export interface TimelineProps { events: HistoricalEvent[]; onSelectEvent?: (event: HistoricalEvent) => void; onPeriodChange?: (zoom:ZoomLevel, date:{year:number;month:number;day:number})=>void; loading?:boolean; error?:string; }
+export function Timeline({ events, onSelectEvent, onPeriodChange, loading, error }: TimelineProps) {
   const [zoom,setZoom] = useState<ZoomLevel>('year');
   const [year,setYear] = useState(1789);
   const [month,setMonth] = useState(7);
@@ -32,6 +32,7 @@ export function Timeline({ events, onSelectEvent }: TimelineProps) {
   const eventById = useMemo(() => new Map(events.map(e => [e.id,e])),[events]);
   const searchResults = useMemo(() => activeEvents.filter(e => [e.title,e.description,e.place,e.category].some(value=>value?.toLocaleLowerCase('fr').includes(query.trim().toLocaleLowerCase('fr')))).slice(0,100),[activeEvents,query]);
   const setScale = (value:ZoomLevel) => setZoom(value);
+  useEffect(()=>{onPeriodChange?.(zoom,{year,month,day});},[zoom,year,month,day,onPeriodChange]);
   useEffect(() => { localStorage.setItem('tempus.categories',JSON.stringify(disabled)); },[disabled]);
   useEffect(() => {
     const handler=(e:KeyboardEvent) => { if(e.key==='Escape'){setDrawer(false);setSelected(null);setJump(false);} };
@@ -42,6 +43,7 @@ export function Timeline({ events, onSelectEvent }: TimelineProps) {
   const toggleFavorite = (id:string) => { const next = favorites.includes(id) ? favorites.filter(x=>x!==id) : [...favorites,id]; setFavorites(next); localStorage.setItem('tempus.favorites',JSON.stringify(next)); };
   return <div className="sites-app">
     <header className="sites-mast"><button aria-label="Ouvrir le menu" onClick={()=>setDrawer(true)}>☰</button><strong className="sites-wordmark">Tempus</strong><span className="sites-period">{formatPeriod(year,month,day,zoom)}</span></header>
+    {(loading||error)&&<div className="sites-api-status" role="status">{loading?'Chargement des événements…':error}</div>}
     <VirtualRail events={activeEvents} zoom={zoom} date={{year,month,day}} onDate={d=>{setYear(d.year);setMonth(d.month);setDay(d.day);}} onZoom={(z,d)=>{setYear(d.year);setMonth(d.month);setDay(d.day);setScale(z);}} onEvent={openEvent}/>
     <footer className="sites-controls"><select aria-label="Échelle de la frise" value={zoom} onChange={e=>setScale(e.target.value as ZoomLevel)}>{ZOOM_LEVELS.map((value,i)=><option key={value} value={value}>{['Siècles','Années','Mois','Jours'][i]}</option>)}</select><button onClick={()=>setJump(true)}>Aller à une année</button></footer>
     {jump && <div className="sites-backdrop" role="presentation" onClick={()=>setJump(false)}><section className="sites-modal" role="dialog" aria-modal="true" aria-label="Aller à une année" onClick={e=>e.stopPropagation()}><button className="sites-close" onClick={()=>setJump(false)}>×</button><h2>Aller à une année</h2><form onSubmit={e=>{e.preventDefault(); const n=Number(inputYear)*(era==='BCE'?-1:1);if(n>=START_YEAR&&n<=END_YEAR&&n!==0){setYear(n);setJump(false);}}}><label>Année<input type="number" min="1" max={era==='BCE'?-START_YEAR:END_YEAR} value={inputYear} onChange={e=>setInputYear(e.target.value)} required/></label><label>Ère<select value={era} onChange={e=>setEra(e.target.value)}><option value="CE">Après J.-C.</option><option value="BCE">Avant J.-C.</option></select></label><button type="submit">Afficher</button></form></section></div>}
