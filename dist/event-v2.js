@@ -78,6 +78,26 @@
     }
     return block;
   }
+  const tabIcons={Contenu:'▤',Acteurs:'♙',Lieux:'♧',Archives:'▧',Sources:'☷'};
+  function addDetailCards(panel){
+    const blocks=[...panel.children].filter(node=>node.classList?.contains('v2-content-block'));
+    if(!blocks.length)return;
+    panel.classList.add('v2-card-list');
+    for(const block of blocks){
+      const heading=block.querySelector('h3');
+      const title=heading?.textContent||'';
+      if(heading)heading.remove();
+      const body=text('div','v2-card-copy','');
+      const titleEl=text('h3','v2-card-title',title);
+      body.append(titleEl);
+      while(block.firstChild)body.append(block.firstChild);
+      const card=text('article','v2-info-card','');
+      const thumbnail=block.querySelector('.v2-archive-image');
+      if(thumbnail){thumbnail.classList.add('v2-card-thumbnail');card.append(thumbnail);}
+      card.append(body);
+      block.replaceWith(card);
+    }
+  }
   function tabContents(event){
     const contents=[];
     const content=text('div','v2-tab-panel','');
@@ -110,7 +130,7 @@
     detail.append(header);
     const hero=text('div','v2-detail-hero','');
     const visual=image(pick(event,'image_url','imageUrl'),'v2-hero-image',event.titre);
-    if(visual){hero.append(visual);if(event.image_credit){const credit=text('p','v2-image-credit','Illustration : '+event.image_credit);hero.append(credit);}}
+    if(visual){hero.classList.add('v2-has-image');hero.append(visual);if(event.image_credit){const credit=text('p','v2-image-credit','Illustration : '+event.image_credit);hero.append(credit);}}
     const intro=text('div','v2-intro','');
     intro.append(text('time','v2-date',event.label||event.date_debut||''),text('h1','v2-title',event.titre||'Événement historique'));
     if(event.categorie)intro.append(text('span','v2-category',event.categorie));
@@ -121,12 +141,29 @@
     if(event.importance)facts.append(text('span','', '◆ '+event.importance));
     if(facts.childElementCount)intro.append(facts);
     hero.append(intro);detail.append(hero);
+    const counts=[['♙','Personnages',event.acteurs?.length],['♧','Lieux',event.lieux?.length],['▧','Illustrations',event.archives?.length],['▤','Sources',event.sources?.length]].filter(entry=>Number.isFinite(entry[2])&&entry[2]>0);
+    if(counts.length){
+      const stats=text('div','v2-stat-grid','');
+      for(const [symbol,label,count] of counts){
+        const item=text('div','v2-stat','');
+        item.append(text('span','v2-stat-icon',symbol),text('strong','v2-stat-number',String(count)),text('span','v2-stat-label',label));
+        stats.append(item);
+      }
+      detail.append(stats);
+    }
+    const overview=text('section','v2-overview','');
+    overview.append(text('h2','v2-overview-title','☷  En bref'));
+    const overviewItems=[['Date',event.label||event.date_debut],['Lieu principal',event.lieu],['Catégorie',event.categorie],['Importance',event.importance]];
+    for(const [label,value] of overviewItems){if(value!==null&&value!==undefined&&value!==''){const item=text('p','v2-overview-row','');item.append(text('strong','',label+' : '),text('span','',String(value)));overview.append(item);}}
+    if(overview.children.length>1)detail.append(overview);
     const panels=tabContents(event);
     if(panels.length){
       const nav=text('nav','v2-tabs','');nav.setAttribute('aria-label','Rubriques de la fiche');
       const content=text('div','v2-panels','');
       panels.forEach((entry,i)=>{
-        const tab=btn(entry.name,'v2-tab',()=>activate(i));
+        const tab=btn('', 'v2-tab',()=>activate(i));
+        tab.append(text('span','v2-tab-icon',tabIcons[entry.name]||'•'),text('span','v2-tab-label',entry.name));
+        addDetailCards(entry.node);
         tab.setAttribute('role','tab');tab.id='v2-tab-'+i;tab.setAttribute('aria-controls','v2-panel-'+i);
         entry.node.id='v2-panel-'+i;entry.node.setAttribute('role','tabpanel');entry.node.setAttribute('aria-labelledby',tab.id);
         nav.append(tab);content.append(entry.node);
