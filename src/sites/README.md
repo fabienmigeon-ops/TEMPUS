@@ -27,3 +27,10 @@ Menu latéral, recherche dans les événements fournis, favoris et historique lo
 - La comparaison pixel par pixel avec Sites n'a pas encore été effectuée.
 
 Ne pas fusionner vers `main` ni déployer avant les contrôles.
+
+
+## Consolidation API (12 novembre 2026)
+
+Le point d'entrée `src/main.tsx` de la branche `integration/v01-consolidated` utilise désormais `Timeline` et `VirtualRail` avec les données de l'Edge Function `tempus-timeline-v1` (variables `VITE_SUPABASE_URL` et `VITE_SUPABASE_ANON_KEY`). Les événements sont normalisés (ID chaîne, dates optionnelles, catégories, couleurs, médias distants). Les fiches conservent les crédits et les liens source. Le chargement est annulé lorsque la période change.
+
+**À valider avant fusion** : build GitHub Actions (non confirmé), tests réels de défilement/pincement sur téléphone, vérification des réponses API selon les quatre zooms, galerie et menu. Les composants V0.1 sont désormais montés dans l'application ; les anciens fichiers `dist/` et `package.json` de V0.1 ne doivent pas remplacer ceux de `main`.
