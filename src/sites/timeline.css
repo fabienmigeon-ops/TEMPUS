@@ -22,3 +22,7 @@
 .sites-controls{bottom:calc(20px + env(safe-area-inset-bottom,0px));gap:0;border:1px solid #45464b;border-radius:999px;background:#292a2e;padding:5px;left:50%;right:auto;transform:translateX(-50%);width:max-content;max-width:calc(100vw - 32px)}
 .sites-controls button,.sites-controls select{border:0;border-radius:999px;background:transparent;color:#e4ded3;padding:10px 14px;font-size:13px}
 @media(max-width:480px){.sites-mast{padding-left:14px;padding-right:14px}.sites-wordmark{font-size:29px}.sites-period{font-size:27px}}
+
+/* API status and remote historical media */
+.sites-api-status{position:absolute;top:110px;left:50%;transform:translateX(-50%);z-index:4;background:#202127e8;border:1px solid #6b5c43;border-radius:9px;padding:8px 14px;font-size:12px;color:#e6d2b1;max-width:90vw;text-align:center}
+.sites-media-gallery{display:grid;gap:18px;margin-top:20px}.sites-media{margin:0}.sites-media>div{min-height:120px;background:#252831;border-radius:10px;display:flex;align-items:center;justify-content:center;overflow:hidden}.sites-media img{width:100%;height:auto;max-height:380px;object-fit:contain}.sites-media figcaption{font-size:13px;line-height:1.5;color:#d3cbbd;margin-top:7px}.sites-media figcaption small,.sites-media figcaption a{display:block;margin-top:4px;color:#c5a46d}.sites-media figcaption a{overflow-wrap:anywhere}
