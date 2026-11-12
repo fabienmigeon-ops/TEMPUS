@@ -51,7 +51,7 @@
     preview.hidden=false;
   }
   const tabs=[
-    {name:'Contenu',parts:[['Contexte','contexte','context'],['Causes','causes'],['Déroulement','deroulement','narrative'],['Conséquences','consequences'],['Importance historique','importance_historique','significance']]},
+    {name:'Contenu',parts:[['Contexte','contexte','context'],['Causes','causes'],['Déroulement','deroulement','narrative'],['Conséquences','consequences'],['Importance historique','importance_historique','significance'],['Débats historiques','debats'],['Introduction','introduction']]},
     {name:'Acteurs',key:['acteurs','actors','personnes','people']},
     {name:'Lieux',key:['lieux','places','locations']},
     {name:'Archives',key:['archives','media','documents']},
@@ -67,9 +67,9 @@
         else if(entry&&typeof entry==='object'){
           const name=pick(entry,'nom','name','titre','title','legende','caption');
           if(name)block.append(text('h4','',name));
-          const photo=image(pick(entry,'image_url','url_image'),'v2-archive-image',name);
+          const photo=image(pick(entry,'image_url','url_image'),'v2-archive-image',pick(entry,'alt_text','image_alt')||name);
           if(photo)block.append(photo);
-          const body=pick(entry,'description','biographie','bio','details','texte','content');
+          const body=pick(entry,'description','biographie','bio','details','texte','content','caption');
           if(body)block.append(text('p','',body));
           const url=pick(entry,'source_url','url','lien');
           if(url&&/^https:\/\//i.test(url)){const a=text('a','v2-link','Consulter la référence ↗');a.href=url;a.target='_blank';a.rel='noopener noreferrer';block.append(a);}
@@ -84,6 +84,9 @@
     for(const [heading,...keys] of tabs[0].parts){const v=pick(event,...keys);if(available(v))content.append(section(heading,v));}
     const description=pick(event,'description');
     if(description&&!content.childElementCount)content.append(section('L’événement',description));
+    if(available(event.faits_cles))content.append(section('Faits clés',event.faits_cles));
+    if(available(event.anecdotes))content.append(section('Anecdotes',event.anecdotes));
+    for(const extra of (event.sections||[])){if(extra?.description)content.append(section(extra.titre||'Complément historique',extra.description));}
     if(content.childElementCount)contents.push({name:'Contenu',node:content});
     for(const tab of tabs.slice(1)){
       const v=pick(event,...tab.key);
@@ -107,7 +110,7 @@
     detail.append(header);
     const hero=text('div','v2-detail-hero','');
     const visual=image(pick(event,'image_url','imageUrl'),'v2-hero-image',event.titre);
-    if(visual)hero.append(visual);
+    if(visual){hero.append(visual);if(event.image_credit){const credit=text('p','v2-image-credit','Illustration : '+event.image_credit);hero.append(credit);}}
     const intro=text('div','v2-intro','');
     intro.append(text('time','v2-date',event.label||event.date_debut||''),text('h1','v2-title',event.titre||'Événement historique'));
     if(event.categorie)intro.append(text('span','v2-category',event.categorie));
