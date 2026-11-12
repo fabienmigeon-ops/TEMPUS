@@ -1,36 +1,57 @@
-/* TEMPUS: live PostgreSQL events via the existing public Supabase Edge Function. */
+/* TEMPUS — API PostgreSQL. No demonstration data or silent fallback. */
 (() => {
-  const url = 'https://tgwmqrvcovigpmmnrjtp.supabase.co/functions/v1/tempus-events';
-  const key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRnd21xcnZjb3ZpZ3BtbW5yanRwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ0MDk0NTQsImV4cCI6MjEwOTk4NTQ1NH0.BnT8P5HIRJW_q_td9MFVU-0dlfVzw_-cSl70WBBN0hQ';
-  function pad(n) { return String(n).padStart(2, '0'); }
-  function date(e) {
-    if (!Number.isInteger(e.year) || e.year < 1 || e.year > 9999) return null;
-    return `${pad(e.year).padStart(4,'0')}-${pad(e.month || 1)}-${pad(e.day || 1)}`;
+  const endpoint = 'https://tgwmqrvcovigpmmnrjtp.supabase.co/functions/v1/tempus-events';
+  const anonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRnd21xcnZjb3ZpZ3BtbW5yanRwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ0MDk0NTQsImV4cCI6MjEwOTk4NTQ1NH0.BnT8P5HIRJW_q_td9MFVU-0dlfVzw_-cSl70WBBN0hQ';
+  function iso(year, month = 1, day = 1) {
+    const y = Number(year), m = Number(month), d = Number(day);
+    if (!Number.isInteger(y) || y < 1 || y > 9999 || !Number.isInteger(m) || m < 1 || m > 12 || !Number.isInteger(d) || d < 1 || d > 31) return null;
+    return String(y).padStart(4, '0') + '-' + String(m).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+  }
+  function normalize(event) {
+    const start = event.date_debut || iso(event.year, event.month, event.day);
+    const end = event.date_fin || (event.endDate && typeof event.endDate === 'object' ? iso(event.endDate.year, event.endDate.month, event.endDate.day) : null);
+    return {
+      id: String(event.id ?? ''),
+      date_debut: start,
+      date_fin: end || '',
+      titre: event.title || event.titre || '',
+      description: event.description || '',
+      lieu: event.place || event.lieu || '',
+      categorie: event.category || event.categorie || '',
+      couleur: event.color || event.couleur || '#C5A46D',
+      importance: event.importance || 'normale'
+    };
+  }
+  function startFrontend(records) {
+    window.tempusEvents = records;
+    const bootstrap = document.getElementById('timeline-bootstrap');
+    const script = document.createElement('script');
+    script.textContent = bootstrap.textContent;
+    document.body.appendChild(script);
+    const menu = document.createElement('script');
+    menu.src = 'menu.js';
+    document.body.appendChild(menu);
+  }
+  function showError(message) {
+    console.error('TEMPUS: ' + message);
+    const notice = document.createElement('div');
+    notice.setAttribute('role', 'alert');
+    notice.style.cssText = 'position:fixed;z-index:1000;top:65px;left:12px;right:12px;padding:16px;border:1px solid #C5A46D;border-radius:12px;background:#10131B;color:#fff;text-align:center';
+    notice.textContent = 'Les événements ne peuvent pas être chargés pour le moment. ' + message;
+    document.body.appendChild(notice);
   }
   async function load() {
     try {
-      const response = await fetch(url, { headers: { apikey: key, Authorization: `Bearer ${key}` } });
-      if (!response.ok) throw new Error('HTTP ' + response.status);
-      const data = await response.json();
-      if (!Array.isArray(data.events)) throw new Error('Invalid events response');
-      const records = data.events.map(e => ({
-        id: String(e.id), date_debut: date(e), date_fin: e.endDate ? date(e.endDate) : '',
-        titre: e.title, description: e.description || '', lieu: e.place || '',
-        categorie: e.category || '', couleur: e.color || '#C5A46D',
-        importance: e.importance || 'normale'
-      })).filter(e => e.date_debut && e.titre);
-      // Preserve the demonstration dataset if the API returns no usable records.
-      if (!records.length) return;
-      window.tempusByYear.clear();
-      records.forEach(record => window.tempusRegister(record));
-      window.tempusRefresh();
-      // The menu caches the original event catalog; update its underlying collection.
-      if (typeof catalog !== 'undefined') catalog.splice(0, catalog.length, ...[...window.tempusByYear.values()].flat());
-      if (typeof categories !== 'undefined') {
-        categories.clear();
-        records.forEach(e => categories.set(e.categorie, e.couleur));
-      }
-    } catch (error) { console.warn('TEMPUS: API indisponible, données de démonstration conservées.', error); }
+      const response = await fetch(endpoint, {headers: {apikey: anonKey, Authorization: 'Bearer ' + anonKey}});
+      if (!response.ok) throw new Error('API HTTP ' + response.status);
+      const payload = await response.json();
+      const source = Array.isArray(payload) ? payload : payload.events;
+      if (!Array.isArray(source)) throw new Error('Format de réponse API inattendu');
+      const records = source.map(normalize).filter(item => item.date_debut && item.titre);
+      startFrontend(records);
+    } catch (error) {
+      showError(error.message || 'Erreur réseau');
+    }
   }
   load();
 })();
