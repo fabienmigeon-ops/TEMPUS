@@ -1,5 +1,6 @@
 export type ZoomLevel = 'century' | 'year' | 'month' | 'day';
 export type Era = 'BCE' | 'CE';
+export interface HistoricalMedia { id:number; title:string; creator_name:string|null; image_url:string|null; source_url:string|null; license_type:string|null; attribution_text:string|null; alt_text:string|null; caption:string|null; role_type:string; }
 export interface HistoricalEvent {
   id: string;
   title: string;
@@ -12,6 +13,7 @@ export interface HistoricalEvent {
   color: string;
   place?: string;
   importance?: 'majeure' | 'normale';
+  media?: HistoricalMedia[];
 }
 export const ZOOM_LEVELS: ZoomLevel[] = ['century', 'year', 'month', 'day'];
 export const MONTHS = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'] as const;
