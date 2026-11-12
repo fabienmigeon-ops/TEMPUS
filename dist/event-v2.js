@@ -133,6 +133,7 @@
     if(visual){hero.classList.add('v2-has-image');hero.append(visual);if(event.image_credit){const credit=text('p','v2-image-credit','Illustration : '+event.image_credit);hero.append(credit);}}
     const intro=text('div','v2-intro','');
     intro.append(text('time','v2-date',event.label||event.date_debut||''),text('h1','v2-title',event.titre||'Événement historique'));
+    if(event.event_type==='birth'||event.event_type==='death')intro.append(text('span','v2-life-tag',event.event_type==='birth'?'✦ Naissance':'◈ Décès'));
     if(event.categorie)intro.append(text('span','v2-category',event.categorie));
     const summary=pick(event,'resume','summary','description');
     if(summary)intro.append(text('p','v2-summary',summary));
@@ -153,7 +154,7 @@
     }
     const overview=text('section','v2-overview','');
     overview.append(text('h2','v2-overview-title','☷  En bref'));
-    const overviewItems=[['Date',event.label||event.date_debut],['Lieu principal',event.lieu],['Catégorie',event.categorie],['Importance',event.importance]];
+    const overviewItems=[['Type',event.event_type==='birth'?'Naissance':event.event_type==='death'?'Décès':null],['Date',event.label||event.date_debut],['Lieu principal',event.lieu],['Catégorie',event.categorie],['Importance',event.importance]];
     for(const [label,value] of overviewItems){if(value!==null&&value!==undefined&&value!==''){const item=text('p','v2-overview-row','');item.append(text('strong','',label+' : '),text('span','',String(value)));overview.append(item);}}
     if(overview.children.length>1)detail.append(overview);
     const panels=tabContents(event);
