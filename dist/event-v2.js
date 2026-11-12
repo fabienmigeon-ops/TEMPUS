@@ -46,7 +46,7 @@
     const desc=pick(event,'resume','summary','description');
     if(desc)preview.append(text('p','v2-preview-desc',desc));
     const footer=text('div','v2-preview-footer','');
-    footer.append(text('span','v2-category',event.categorie||''),btn('Découvrir l’événement →','v2-primary',()=>openDetail(event)));
+    footer.append(text('span','v2-category',event.categorie||''),btn('Découvrir','v2-primary',()=>openDetail(event)));
     preview.append(footer);
     preview.hidden=false;
   }
