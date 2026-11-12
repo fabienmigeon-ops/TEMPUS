@@ -21,29 +21,17 @@
   </nav>
   <section id="menuPage" hidden><button id="menuBack">‹ Menu principal</button><h2 id="pageTitle" tabindex="-1"></h2><div id="pageBody"></div></section>
 </dialog>
-<script src="1789.js"></script>
 
-<script>
-const events=[
-["5 mai 1789","Ouverture des États généraux","Versailles","Louis XVI réunit des représentants du clergé, de la noblesse et du tiers état pour sortir le royaume de sa crise financière.","Une question divise les députés dès leur arrivée. Si chaque ordre dispose d’une voix, les deux premiers peuvent toujours l’emporter sur le tiers état.",1],
-["17 juin 1789","Naissance de l’Assemblée nationale","Versailles","Les députés du tiers état, rejoints par des membres du clergé, se proclament Assemblée nationale.","En se donnant ce nom, les députés revendiquent le droit de parler au nom de toute la nation."],
-["20 juin 1789","Serment du Jeu de paume","Versailles","Trouvant leur salle fermée, les députés se rassemblent dans une salle de jeu voisine. Ils jurent de rester réunis jusqu’à ce que la France ait une constitution.","Le serment engage chacun des députés envers les autres. Une décision royale ne suffira plus à les disperser."],
-["14 juillet 1789","Prise de la Bastille","Paris","Des Parisiens qui cherchent de la poudre se rendent devant la Bastille. Après plusieurs heures de combat, la forteresse capitule.","Cette prison royale incarnait la possibilité d’être enfermé sur ordre du roi. Sa chute donne à l’intervention du peuple de Paris un retentissement qui dépasse largement la capitale.",1],
-["4 août 1789","La nuit du 4 août","Versailles","Alors que les campagnes sont agitées par la Grande Peur, des députés proposent de renoncer aux privilèges. Les interventions se succèdent pendant la nuit.","La fin de la société de privilèges est engagée. Certaines redevances seigneuriales restent pourtant soumises au rachat jusqu’en 1793."],
-["26 août 1789","Déclaration des droits de l’homme et du citoyen","Versailles","L’Assemblée adopte dix-sept articles qui proclament notamment la liberté, l’égalité en droits et la souveraineté nationale.","Ces principes donnent aux citoyens des critères pour juger les actes du pouvoir. Leur application aux femmes et aux populations des colonies devient un enjeu de lutte."],
-["21 juin 1791","Le roi arrêté à Varennes","Varennes-en-Argonne","Louis XVI et sa famille quittent Paris en secret. Reconnus en chemin, ils sont arrêtés à Varennes et ramenés dans la capitale.","Comment confier le pouvoir exécutif à un roi qui a tenté de partir ? La fuite ouvre une crise de confiance."],
-["21 septembre 1792","Abolition de la royauté","Paris","À sa première séance, la Convention nationale abolit la royauté. Dès le lendemain, les actes publics sont datés de l’an premier de la République.","La transmission héréditaire de la couronne cesse d’organiser le pouvoir en France.",1],
-["21 janvier 1793","Exécution de Louis XVI","Paris","Condamné à mort à l’issue de son procès devant la Convention, Louis XVI est guillotiné sur la place de la Révolution, aujourd’hui place de la Concorde.","Les députés ont dû décider si le roi déchu pouvait être jugé et qui avait autorité pour prononcer sa peine."],
-["27 juillet 1794","Arrestation de Robespierre","Paris","Le 9 thermidor an II, la Convention ordonne l’arrestation de Robespierre et de plusieurs de ses alliés. Il est exécuté le lendemain.","Sa chute ouvre une lutte politique sur le sort des institutions et des pratiques du gouvernement révolutionnaire.",1],
-["9–10 novembre 1799","Coup d’État de Brumaire","Paris et Saint-Cloud","Bonaparte et ses alliés renversent le Directoire au cours des journées des 18 et 19 brumaire. Un Consulat provisoire est établi.","Le changement de régime ouvre la voie à la concentration du pouvoir entre les mains du Premier consul.",1]
-];
+
+<script type="text/plain" id="timeline-bootstrap">
+const events=[];
 const el=id=>document.getElementById(id), rail=el('rail'),sheet=el('sheet');
 const monthNames = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
 const firstYear = -3100;
 const today = new Date();
 const lastYear = today.getFullYear();
 const byYear = new Map();
-const legacyIds = ['013','017','019','028','036','039'];
+const legacyIds = [];
 const legacyById = new Map(legacyIds.map((suffix,i)=>['TMP-1789-'+suffix,events[i]]));
 function dateLabel(iso) {
   const [year,month,day] = iso.split('-').map(Number);
@@ -57,16 +45,10 @@ function register(record, legacy) {
   if (!byYear.has(year)) byYear.set(year, []);
   byYear.get(year).push(event);
 }
-for (const record of importedEvents) register(record, legacyById.get(record.id));
+for (const record of (window.tempusEvents || [])) register(record);
 window.tempusRegister = register;
 window.tempusByYear = byYear;
 window.tempusRefresh = () => { for (const entries of byYear.values()) entries.sort((a,b)=>a.start-b.start); if (typeof render === "function") render(); };
-for (const legacy of events.slice(legacyIds.length)) {
-  const [days, month, year] = legacy[0].split(' ');
-  const [start,end] = days.split('–');
-  const prefix = year+'-'+String(monthNames.indexOf(month)+1).padStart(2,'0')+'-';
-  register({date_debut:prefix+start.padStart(2,'0'), date_fin:end?prefix+end.padStart(2,'0'):'', titre:legacy[1], lieu:legacy[2]},legacy);
-}
 for (const entries of byYear.values()) entries.sort((a,b)=>a.start-b.start);
 function show(event) {
   el('date').textContent=event.label;
@@ -378,4 +360,4 @@ sheet.addEventListener('click', event => {
   if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) sheet.close();
 });
 centerDate({year:1789}, rail.clientWidth/2);
-</script><script src="menu.js"></script><script src="api.js"></script></html>
+</script><script src="api.js"></script></html>
