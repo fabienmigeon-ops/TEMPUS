@@ -79,3 +79,7 @@ body.v2-detail-open{overflow:hidden}
 .v2-info-card .v2-link{font-size:13px;margin:7px 0;color:#f2cc88}
 @media(max-width:600px){.v2-stat-grid,.v2-overview{margin-left:16px;margin-right:16px}.v2-info-card{padding:13px;gap:12px}.v2-detail-hero.v2-has-image{padding-top:clamp(210px,42dvh,350px)}}
 @media(prefers-reduced-motion:reduce){.v2-detail *{scroll-behavior:auto}}
+
+/* V2 life-event detail styling; the preview card is intentionally unchanged. */
+.v2-life-tag{display:inline-block;color:#121820;background:#b6d9c8;border-radius:6px;font-size:12px;font-weight:800;letter-spacing:.08em;padding:5px 10px;margin-bottom:12px}
+.v2-detail:has(.v2-life-tag) .v2-intro .v2-category{margin-top:3px}
