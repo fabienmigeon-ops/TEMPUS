@@ -6,7 +6,7 @@ const catalog = [...byYear.values()].flat();
 const eventKey = event => event.id || event.date_debut+'|'+event.titre;
 const favorites = new Set(loadList('favorites'));
 let visits = loadList('history');
-const categories = new Map(importedEvents.map(event => [event.categorie,event.couleur]));
+const categories = new Map((window.tempusEvents || []).map(event => [event.categorie,event.couleur]));
 let closing = false;
 
 function saveList(name, values) {
